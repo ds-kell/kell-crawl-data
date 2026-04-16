@@ -1,0 +1,30 @@
+[2026-04-17T06:51:10.749Z] [LOAD] Loaded 6056 existing records.
+[2026-04-17T06:51:10.750Z] [LOAD] 1 URL cần retry từ fb_errors.json
+[2026-04-17T06:51:11.996Z] 
+════════════════════════════════════════════════════════════
+[2026-04-17T06:51:11.996Z]   Facebook Photo Crawler — script3 (retry errors)
+[2026-04-17T06:51:11.996Z]   Pending: 1 URLs
+[2026-04-17T06:51:11.996Z]   Output:  fb_images_v2.json
+[2026-04-17T06:51:11.996Z] ════════════════════════════════════════════════════════════
+[2026-04-17T06:51:12.897Z] ⚠️  ĐĂNG NHẬP: Điền email/password trong cửa sổ trình duyệt.
+[2026-04-17T06:51:12.897Z]    Script chờ tối đa 5 phút. Nhấn Enter khi xong.
+[2026-04-17T06:56:56.410Z] [LOAD] Loaded 6056 existing records.
+[2026-04-17T06:56:56.411Z] [LOAD] 1 URL cần retry từ fb_errors.json
+[2026-04-17T06:56:57.338Z] 
+════════════════════════════════════════════════════════════
+[2026-04-17T06:56:57.338Z]   Facebook Photo Crawler — script3 (retry errors)
+[2026-04-17T06:56:57.338Z]   Pending: 1 URLs
+[2026-04-17T06:56:57.338Z]   Output:  fb_images_v2.json
+[2026-04-17T06:56:57.338Z] ════════════════════════════════════════════════════════════
+[2026-04-17T06:56:58.398Z] ⚠️  ĐĂNG NHẬP: Điền email/password trong cửa sổ trình duyệt.
+[2026-04-17T06:56:58.398Z]    Script chờ tối đa 5 phút. Nhấn Enter khi xong.
+[2026-04-17T09:33:29.773Z] [LOAD] Loaded 6056 existing records.
+[2026-04-17T09:33:29.776Z] [LOAD] 1 URL cần retry từ fb_errors.json
+[2026-04-17T09:33:30.933Z] 
+════════════════════════════════════════════════════════════
+[2026-04-17T09:33:30.934Z]   Facebook Photo Crawler — script3 (retry errors)
+[2026-04-17T09:33:30.934Z]   Pending: 1 URLs
+[2026-04-17T09:33:30.934Z]   Output:  fb_images_v2.json
+[2026-04-17T09:33:30.934Z] ════════════════════════════════════════════════════════════
+[2026-04-17T09:33:31.684Z] ⚠️  ĐĂNG NHẬP: Điền email/password trong cửa sổ trình duyệt.
+[2026-04-17T09:33:31.684Z]    Script chờ tối đa 5 phút. Nhấn Enter khi xong.

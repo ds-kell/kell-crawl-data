@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2026-04-16T16:29:54.132Z",
+    "context": "reload after stuck round=572",
+    "message": "page.reload: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n\u001b[2m  - waiting for navigation until \"domcontentloaded\"\u001b[22m\n"
+  },
+  {
+    "timestamp": "2026-04-17T01:07:54.126Z",
+    "context": "no image after retries round=2220",
+    "message": "url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000"
+  },
+  {
+    "timestamp": "2026-04-17T01:08:26.864Z",
+    "context": "no image after retries round=2221",
+    "message": "url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000"
+  },
+  {
+    "timestamp": "2026-04-17T06:40:16.398Z",
+    "context": "reload after stuck round=10586",
+    "message": "page.reload: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for navigation until \"domcontentloaded\"\u001b[22m\n\u001b[2m    - navigated to \"https://www.facebook.com/photo/?fbid=1346128682392727&set=pb.100044313229653.-2207520000\"\u001b[22m\n"
+  },
+  {
+    "timestamp": "2026-04-17T06:40:16.398Z",
+    "context": "viewerCrawl fatal",
+    "message": "page.waitForTimeout: Target page, context or browser has been closed"
+  }
+]
