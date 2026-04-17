@@ -7,12 +7,18 @@
   {
     "timestamp": "2026-04-17T01:07:54.126Z",
     "context": "no image after retries round=2220",
-    "message": "url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000"
+    "message": "url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000",
+    "retried": true,
+    "retry_status": "success",
+    "retried_at": "2026-04-17T13:54:53.738Z"
   },
   {
     "timestamp": "2026-04-17T01:08:26.864Z",
     "context": "no image after retries round=2221",
-    "message": "url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000"
+    "message": "url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000",
+    "retried": true,
+    "retry_status": "success",
+    "retried_at": "2026-04-17T13:54:53.738Z"
   },
   {
     "timestamp": "2026-04-17T06:40:16.398Z",

@@ -7,10 +7,10 @@
  * - Dừng khi hết danh sách
  */
 
-const { chromium } = require("playwright");
-const fs = require("fs");
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
+import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const OUTPUT_FILE     = "fb_images_v2.json";

@@ -1,0 +1,121 @@
+[2026-04-17T13:55:36.014Z] [RESUME] Loaded 6057 existing records. globalIndex=6057
+[2026-04-17T13:55:36.025Z] [RESUME] Ảnh cuối cùng: index=6056 | web_url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000
+[2026-04-17T13:55:36.445Z] 
+════════════════════════════════════════════════════════════
+[2026-04-17T13:55:36.446Z]   Facebook Photo Crawler — script2 (resume)
+[2026-04-17T13:55:36.446Z]   Start URL: https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000
+[2026-04-17T13:55:36.446Z]   Stop at:   https://www.facebook.com/photo.php?fbid=1500626338091126&set=pb.100044313229653.-2207520000&type=3
+[2026-04-17T13:55:36.446Z]   Output:    fb_images_v2.json
+[2026-04-17T13:55:36.446Z] ════════════════════════════════════════════════════════════
+[2026-04-17T13:55:37.130Z] ⚠️  ĐĂNG NHẬP: Điền email/password trong cửa sổ trình duyệt.
+[2026-04-17T13:55:37.130Z]    Script chờ tối đa 5 phút. Nhấn Enter khi xong.
+[2026-04-17T13:56:45.953Z] [NAV] Chuyển đến https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000 ...
+[2026-04-17T13:56:51.298Z] [VIEWER] Bắt đầu crawl tiếp...
+[2026-04-17T13:56:54.807Z] [SKIP-SEEN] round=1 url=https://www.facebook.com/photo/?fbid=749965576490543&set=pb.100044313229653.-2207520000
+[2026-04-17T13:56:56.617Z] [SKIP-SEEN] round=2 url=https://www.facebook.com/photo/?fbid=749548903198877&set=pb.100044313229653.-2207520000
+[2026-04-17T13:56:58.393Z] [SKIP-SEEN] round=3 url=https://www.facebook.com/photo/?fbid=749038999916534&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:00.184Z] [SKIP-SEEN] round=4 url=https://www.facebook.com/photo/?fbid=749038156583285&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:01.975Z] [SKIP-SEEN] round=5 url=https://www.facebook.com/photo/?fbid=749037999916634&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:03.759Z] [SKIP-SEEN] round=6 url=https://www.facebook.com/photo/?fbid=749037966583304&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:05.534Z] [SKIP-SEEN] round=7 url=https://www.facebook.com/photo/?fbid=749037923249975&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:07.310Z] [SKIP-SEEN] round=8 url=https://www.facebook.com/photo/?fbid=749037873249980&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:09.119Z] [SKIP-SEEN] round=9 url=https://www.facebook.com/photo/?fbid=749037829916651&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:10.908Z] [SKIP-SEEN] round=10 url=https://www.facebook.com/photo/?fbid=749037786583322&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:12.678Z] [SKIP-SEEN] round=11 url=https://www.facebook.com/photo/?fbid=749037716583329&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:14.456Z] [SKIP-SEEN] round=12 url=https://www.facebook.com/photo/?fbid=749037696583331&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:16.259Z] [SKIP-SEEN] round=13 url=https://www.facebook.com/photo/?fbid=748359396651161&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:18.047Z] [SKIP-SEEN] round=14 url=https://www.facebook.com/photo/?fbid=747788800041554&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:19.832Z] [SKIP-SEEN] round=15 url=https://www.facebook.com/photo/?fbid=747258623427905&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:21.628Z] [SKIP-SEEN] round=16 url=https://www.facebook.com/photo/?fbid=746725406814560&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:23.420Z] [SKIP-SEEN] round=17 url=https://www.facebook.com/photo/?fbid=745480253605742&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:25.204Z] [SKIP-SEEN] round=18 url=https://www.facebook.com/photo/?fbid=745480233605744&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:26.989Z] [SKIP-SEEN] round=19 url=https://www.facebook.com/photo/?fbid=745480210272413&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:28.767Z] [SKIP-SEEN] round=20 url=https://www.facebook.com/photo/?fbid=744441967042904&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:29.038Z] [VIEWER] Round 20 | Collected: 6057
+[2026-04-17T13:57:30.541Z] [SKIP-SEEN] round=21 url=https://www.facebook.com/photo/?fbid=743888953764872&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:32.309Z] [SKIP-SEEN] round=22 url=https://www.facebook.com/photo/?fbid=743888830431551&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:34.086Z] [SKIP-SEEN] round=23 url=https://www.facebook.com/photo/?fbid=743888780431556&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:35.856Z] [SKIP-SEEN] round=24 url=https://www.facebook.com/photo/?fbid=743888713764896&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:37.632Z] [SKIP-SEEN] round=25 url=https://www.facebook.com/photo/?fbid=743888577098243&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:39.407Z] [SKIP-SEEN] round=26 url=https://www.facebook.com/photo/?fbid=743888553764912&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:41.187Z] [SKIP-SEEN] round=27 url=https://www.facebook.com/photo/?fbid=743398223813945&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:42.975Z] [SKIP-SEEN] round=28 url=https://www.facebook.com/photo/?fbid=743398140480620&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:44.759Z] [SKIP-SEEN] round=29 url=https://www.facebook.com/photo/?fbid=743398110480623&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:46.524Z] [SKIP-SEEN] round=30 url=https://www.facebook.com/photo/?fbid=743398040480630&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:48.310Z] [SKIP-SEEN] round=31 url=https://www.facebook.com/photo/?fbid=743398013813966&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:50.079Z] [SKIP-SEEN] round=32 url=https://www.facebook.com/photo/?fbid=743397987147302&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:51.863Z] [SKIP-SEEN] round=33 url=https://www.facebook.com/photo/?fbid=743397957147305&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:53.646Z] [SKIP-SEEN] round=34 url=https://www.facebook.com/photo/?fbid=743397917147309&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:55.436Z] [SKIP-SEEN] round=35 url=https://www.facebook.com/photo/?fbid=743397793813988&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:57.231Z] [SKIP-SEEN] round=36 url=https://www.facebook.com/photo/?fbid=742117663942001&set=pb.100044313229653.-2207520000
+[2026-04-17T13:57:59.018Z] [SKIP-SEEN] round=37 url=https://www.facebook.com/photo/?fbid=741458330674601&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:00.809Z] [SKIP-SEEN] round=38 url=https://www.facebook.com/photo/?fbid=740835547403546&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:02.588Z] [SKIP-SEEN] round=39 url=https://www.facebook.com/photo/?fbid=740835484070219&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:04.377Z] [SKIP-SEEN] round=40 url=https://www.facebook.com/photo/?fbid=740835390736895&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:04.649Z] [VIEWER] Round 40 | Collected: 6057
+[2026-04-17T13:58:06.151Z] [SKIP-SEEN] round=41 url=https://www.facebook.com/photo/?fbid=740185900801844&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:07.939Z] [SKIP-SEEN] round=42 url=https://www.facebook.com/photo/?fbid=739441307542970&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:09.725Z] [SKIP-SEEN] round=43 url=https://www.facebook.com/photo/?fbid=739440034209764&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:11.503Z] [SKIP-SEEN] round=44 url=https://www.facebook.com/photo/?fbid=739439970876437&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:13.289Z] [SKIP-SEEN] round=45 url=https://www.facebook.com/photo/?fbid=739439934209774&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:15.058Z] [SKIP-SEEN] round=46 url=https://www.facebook.com/photo/?fbid=739439800876454&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:16.826Z] [SKIP-SEEN] round=47 url=https://www.facebook.com/photo/?fbid=739439777543123&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:18.613Z] [SKIP-SEEN] round=48 url=https://www.facebook.com/photo/?fbid=739439690876465&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:20.399Z] [SKIP-SEEN] round=49 url=https://www.facebook.com/photo/?fbid=738146574339110&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:22.182Z] [SKIP-SEEN] round=50 url=https://www.facebook.com/photo/?fbid=738146264339141&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:23.949Z] [SKIP-SEEN] round=51 url=https://www.facebook.com/photo/?fbid=738146241005810&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:25.723Z] [SKIP-SEEN] round=52 url=https://www.facebook.com/photo/?fbid=738146201005814&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:27.505Z] [SKIP-SEEN] round=53 url=https://www.facebook.com/photo/?fbid=738146157672485&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:29.271Z] [SKIP-SEEN] round=54 url=https://www.facebook.com/photo/?fbid=736834357803665&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:31.051Z] [SKIP-SEEN] round=55 url=https://www.facebook.com/photo/?fbid=736834354470332&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:32.857Z] [SKIP-SEEN] round=56 url=https://www.facebook.com/photo/?fbid=736834351136999&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:34.630Z] [SKIP-SEEN] round=57 url=https://www.facebook.com/photo/?fbid=735613104592457&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:36.411Z] [SKIP-SEEN] round=58 url=https://www.facebook.com/photo/?fbid=734923214661446&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:38.199Z] [SKIP-SEEN] round=59 url=https://www.facebook.com/photo/?fbid=734174221403012&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:39.976Z] [SKIP-SEEN] round=60 url=https://www.facebook.com/photo/?fbid=734174198069681&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:40.259Z] [VIEWER] Round 60 | Collected: 6057
+[2026-04-17T13:58:41.762Z] [SKIP-SEEN] round=61 url=https://www.facebook.com/photo/?fbid=734174161403018&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:43.532Z] [SKIP-SEEN] round=62 url=https://www.facebook.com/photo/?fbid=734174128069688&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:45.321Z] [SKIP-SEEN] round=63 url=https://www.facebook.com/photo/?fbid=734174064736361&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:47.105Z] [SKIP-SEEN] round=64 url=https://www.facebook.com/photo/?fbid=734174061403028&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:48.880Z] [SKIP-SEEN] round=65 url=https://www.facebook.com/photo/?fbid=732909561529478&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:50.665Z] [SKIP-SEEN] round=66 url=https://www.facebook.com/photo/?fbid=732909524862815&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:52.438Z] [SKIP-SEEN] round=67 url=https://www.facebook.com/photo/?fbid=732909488196152&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:54.221Z] [SKIP-SEEN] round=68 url=https://www.facebook.com/photo/?fbid=732909258196175&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:55.995Z] [SKIP-SEEN] round=69 url=https://www.facebook.com/photo/?fbid=732909208196180&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:57.782Z] [SKIP-SEEN] round=70 url=https://www.facebook.com/photo/?fbid=732909168196184&set=pb.100044313229653.-2207520000
+[2026-04-17T13:58:59.565Z] [SKIP-SEEN] round=71 url=https://www.facebook.com/photo/?fbid=732909104862857&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:01.355Z] [SKIP-SEEN] round=72 url=https://www.facebook.com/photo/?fbid=732909068196194&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:03.132Z] [SKIP-SEEN] round=73 url=https://www.facebook.com/photo/?fbid=732228294930938&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:04.916Z] [SKIP-SEEN] round=74 url=https://www.facebook.com/photo/?fbid=732228291597605&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:06.693Z] [SKIP-SEEN] round=75 url=https://www.facebook.com/photo/?fbid=732228288264272&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:08.488Z] [SKIP-SEEN] round=76 url=https://www.facebook.com/photo/?fbid=732040478283053&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:10.280Z] [SKIP-SEEN] round=77 url=https://www.facebook.com/photo/?fbid=730948168392284&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:12.067Z] [SKIP-SEEN] round=78 url=https://www.facebook.com/photo/?fbid=730948105058957&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:13.842Z] [SKIP-SEEN] round=79 url=https://www.facebook.com/photo/?fbid=730947985058969&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:15.621Z] [SKIP-SEEN] round=80 url=https://www.facebook.com/photo/?fbid=730947878392313&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:15.910Z] [VIEWER] Round 80 | Collected: 6057
+[2026-04-17T13:59:17.412Z] [SKIP-SEEN] round=81 url=https://www.facebook.com/photo/?fbid=730947761725658&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:19.201Z] [SKIP-SEEN] round=82 url=https://www.facebook.com/photo/?fbid=730947735058994&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:20.990Z] [SKIP-SEEN] round=83 url=https://www.facebook.com/photo/?fbid=728870395266728&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:22.778Z] [SKIP-SEEN] round=84 url=https://www.facebook.com/photo/?fbid=728870375266730&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:24.573Z] [SKIP-SEEN] round=85 url=https://www.facebook.com/photo/?fbid=728870341933400&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:26.369Z] [SKIP-SEEN] round=86 url=https://www.facebook.com/photo/?fbid=728630348624066&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:28.162Z] [SKIP-SEEN] round=87 url=https://www.facebook.com/photo/?fbid=728630328624068&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:29.947Z] [SKIP-SEEN] round=88 url=https://www.facebook.com/photo/?fbid=728630288624072&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:31.734Z] [SKIP-SEEN] round=89 url=https://www.facebook.com/photo/?fbid=728630261957408&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:33.509Z] [SKIP-SEEN] round=90 url=https://www.facebook.com/photo/?fbid=728042268682874&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:35.295Z] [SKIP-SEEN] round=91 url=https://www.facebook.com/photo/?fbid=728042238682877&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:37.078Z] [SKIP-SEEN] round=92 url=https://www.facebook.com/photo/?fbid=728042218682879&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:38.852Z] [SKIP-SEEN] round=93 url=https://www.facebook.com/photo/?fbid=728042192016215&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:40.632Z] [SKIP-SEEN] round=94 url=https://www.facebook.com/photo/?fbid=727585105395257&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:42.425Z] [SKIP-SEEN] round=95 url=https://www.facebook.com/photo/?fbid=727296645424103&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:44.203Z] [SKIP-SEEN] round=96 url=https://www.facebook.com/photo/?fbid=727296618757439&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:45.990Z] [SKIP-SEEN] round=97 url=https://www.facebook.com/photo/?fbid=727296575424110&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:47.774Z] [SKIP-SEEN] round=98 url=https://www.facebook.com/photo/?fbid=726661672154267&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:49.545Z] [SKIP-SEEN] round=99 url=https://www.facebook.com/photo/?fbid=726661648820936&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:51.327Z] [SKIP-SEEN] round=100 url=https://www.facebook.com/photo/?fbid=726217748865326&set=pb.100044313229653.-2207520000
+[2026-04-17T13:59:51.602Z] [VIEWER] Round 100 | Collected: 6057
+[2026-04-17T13:59:51.603Z] [VIEWER] Không collect được ảnh mới trong 100 round (từ round 0). Dừng.
+[2026-04-17T13:59:51.735Z] ✅ Done! 6057 ảnh đã lưu vào fb_images_v2.json
+[2026-04-17T13:59:51.735Z] ⚠️  5 lỗi trong fb_errors.json

@@ -8,10 +8,10 @@
  * - Concurrency: tải song song N ảnh cùng lúc
  */
 
-const fs   = require("fs");
-const path = require("path");
-const https = require("https");
-const http  = require("http");
+import fs from 'fs';
+import path from 'path';
+import https from 'https';
+import http from 'http';
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const INPUT_FILE    = "fb_images_v2.json";

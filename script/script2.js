@@ -6,10 +6,11 @@
  * - Dừng khi gặp TARGET_URL (ảnh đầu tiên = đã đi hết vòng)
  */
 
-const { chromium } = require("playwright");
-const fs = require("fs");
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
+import { chromium } from 'playwright';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const TARGET_URL      = "https://www.facebook.com/photo.php?fbid=1500626338091126&set=pb.100044313229653.-2207520000&type=3";
