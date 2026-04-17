@@ -1,13 +1,13 @@
 /**
- * Facebook Photo URL Crawler
+ * E-Hentai Gallery Crawler
  *
- * Strategy: Mở viewer từng ảnh, nhấn ArrowRight để next, lưu URL ảnh gốc.
+ * Strategy: Mở từng trang ảnh, click nút #next để sang trang kế, lưu URL ảnh gốc (#img).
  * - Lưu web_url để detect vòng lặp (khi next về ảnh đầu tiên thì dừng)
  * - Resume được nếu chạy lại
  * - Lưu realtime từng ảnh
  *
  * Usage:
- *   node fb_photo_crawler.js
+ *   node script.js
  *
  * Requirements:
  *   npm install playwright uuid
@@ -20,13 +20,12 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-// 
-const TARGET_URL        = "https://www.facebook.com/photo.php?fbid=1500626338091126&set=pb.100044313229653.-2207520000&type=3";
-const FIRST_PHOTO_URL   = "https://www.facebook.com/photo.php?fbid=1500626338091126&set=pb.100044313229653.-2207520000&type=3";
+const TARGET_URL        = "https://e-hentai.org/s/14cef5ae9a/2917545-1";
+const FIRST_PHOTO_URL   = "https://e-hentai.org/s/14cef5ae9a/2917545-1";
+const LAST_PHOTO_URL    = "https://e-hentai.org/s/e0f25470eb/2917545-1348";
 const OUTPUT_FILE       = "fb_images_v2.json";
 const ERROR_FILE        = "fb_errors.json";
 const HEADLESS          = false;
-const LOGIN_WAIT_MS     = 300000;   // 5 phút chờ đăng nhập thủ công
 const PHOTO_WAIT_MS     = 1500;     // Chờ sau mỗi lần next ảnh
 const LOG_FILE          = "fb_crawl.log";
 const MAX_PAGE_RETRIES  = 5;        // Số lần reload nếu không tìm thấy ảnh
@@ -96,35 +95,11 @@ function ingestOne(imgUrl, webUrl) {
   return true;
 }
 
-// ── Lấy URL ảnh gốc từ viewer (ưu tiên data-visualcompletion="media-vc-image") ─
+// ── Lấy URL ảnh gốc từ #img ──────────────────────────────────────────────────
 async function extractViewerImage(page) {
   return page.evaluate(() => {
-    // Ưu tiên ảnh có attribute media-vc-image (ảnh chính trong viewer)
-    const mediaImgs = [...document.querySelectorAll('img[data-visualcompletion="media-vc-image"]')];
-
-    // Fallback: tất cả img từ CDN facebook
-    const allImgs = [...document.querySelectorAll("img")].filter((img) => {
-      const src = img.src || "";
-      return (
-        (src.includes("scontent") || src.includes("fbcdn")) &&
-        !src.includes("emoji") &&
-        !src.includes("rsrc.php") &&
-        // Loại thumbnail rõ ràng (p80x80, p160x160 trong stp)
-        !/stp=.*p\d{2,3}x\d{2,3}/.test(src)
-      );
-    });
-
-    const candidates = mediaImgs.length ? mediaImgs : allImgs;
-    if (!candidates.length) return null;
-
-    // Lấy ảnh có diện tích lớn nhất
-    candidates.sort((a, b) => (b.naturalWidth * b.naturalHeight) - (a.naturalWidth * a.naturalHeight));
-
-    try {
-      const u = new URL(candidates[0].src);
-      u.searchParams.delete("stp");
-      return u.toString();
-    } catch (e) { console.error("[extractViewerImage] Failed to parse URL:", candidates[0].src, e?.message); return candidates[0].src; }
+    const img = document.querySelector("img#img");
+    return img ? img.src : null;
   });
 }
 
@@ -141,8 +116,7 @@ async function withRetry(fn, label, retries = NETWORK_RETRY_LIMIT) {
   }
 }
 
-
-// ── Viewer crawl: bắt đầu từ URL ảnh đầu tiên, ArrowRight từng bước ──────────
+// ── Viewer crawl: bắt đầu từ URL ảnh đầu tiên, click #next từng bước ─────────
 async function viewerCrawl(page) {
   log("[VIEWER] Bắt đầu crawl từ ảnh đầu tiên...");
   await page.waitForTimeout(2000);
@@ -150,7 +124,7 @@ async function viewerCrawl(page) {
   let round = 0;
   let lastCollectedCount = 0;
   let stuckSinceRound = 0;
-  const MAX_STUCK_ROUNDS = 100; // Dừng nếu 100 round liên tiếp không collect được ảnh mới
+  const MAX_STUCK_ROUNDS = 100;
 
   while (true) {
     round++;
@@ -187,9 +161,19 @@ async function viewerCrawl(page) {
       }
     }
 
-    // Next ảnh
-    try { await page.keyboard.press("ArrowRight"); }
-    catch (e) { logError(`ArrowRight round=${round} url=${webUrl}`, e); break; }
+    // Dừng nếu đây là trang cuối
+    if (webUrl === LAST_PHOTO_URL) {
+      log(`[VIEWER] Đã đến ảnh cuối cùng — dừng. Total: ${Object.keys(collected).length}`);
+      break;
+    }
+
+    // Next ảnh: click nút #next
+    try {
+      await page.click("a#next");
+    } catch (e) {
+      logError(`click #next round=${round} url=${webUrl}`, e);
+      break;
+    }
 
     // Chờ URL thực sự thay đổi (tối đa 5s), nếu không đổi thì tự reload
     const prevUrl = webUrl;
@@ -201,22 +185,15 @@ async function viewerCrawl(page) {
     }
 
     if (nextUrl === prevUrl) {
-      log(`[STUCK] URL không đổi sau ArrowRight round=${round}, tự reload...`);
+      log(`[STUCK] URL không đổi sau click #next round=${round}, tự reload...`);
       try {
         await page.reload({ waitUntil: "domcontentloaded" });
         await page.waitForTimeout(PHOTO_WAIT_MS);
-        // Sau reload, xóa URL hiện tại khỏi seenWebUrls để extract lại
         seenWebUrls.delete(prevUrl);
       } catch (e) {
         logError(`reload after stuck round=${round}`, e);
       }
       continue;
-    }
-
-    // Nếu URL quay về URL đầu tiên thì đã đi hết vòng — dừng
-    if (nextUrl === FIRST_PHOTO_URL) {
-      log(`[VIEWER] Đã quay về ảnh đầu tiên — dừng. Total: ${Object.keys(collected).length}`);
-      break;
     }
 
     if (round % 20 === 0) {
@@ -256,42 +233,28 @@ async function viewerCrawl(page) {
   const page = await context.newPage();
 
   log(`\n${"═".repeat(60)}`);
-  log(`  Facebook Photo Crawler`);
+  log(`  E-Hentai Gallery Crawler`);
   log(`  Target: ${TARGET_URL}`);
   log(`  Output: ${OUTPUT_FILE}`);
   log(`  Log:    ${LOG_FILE}`);
   log(`${"═".repeat(60)}`);
 
-  // ── STEP 1: Login thủ công ──────────────────────────────────────────────────
-  await withRetry(
-    () => page.goto("https://www.facebook.com/login", { waitUntil: "domcontentloaded", timeout: 60000 }),
-    "page.goto login"
-  );
-
-  log("⚠️  ĐĂNG NHẬP: Điền email/password trong cửa sổ trình duyệt.");
-  log(`   Script chờ tối đa ${LOGIN_WAIT_MS / 60000} phút. Nhấn Enter khi xong.`);
-
-  await Promise.race([
-    new Promise((resolve) => process.stdin.once("data", resolve)),
-    page.waitForTimeout(LOGIN_WAIT_MS),
-  ]);
-
-  // ── STEP 2: Vào trang photos ────────────────────────────────────────────────
+  // ── STEP 1: Vào trang ảnh đầu tiên (không cần login) ───────────────────────
   log(`[NAV] Chuyển đến ${TARGET_URL} ...`);
   await withRetry(
     () => page.goto(TARGET_URL, { waitUntil: "domcontentloaded", timeout: 60000 }),
-    "page.goto photos"
+    "page.goto target"
   );
   await page.waitForTimeout(4000);
 
-  // ── STEP 3: Crawl từng ảnh trong viewer ────────────────────────────────────
+  // ── STEP 2: Crawl từng ảnh ─────────────────────────────────────────────────
   try {
     await viewerCrawl(page);
   } catch (e) {
     logError("viewerCrawl fatal", e);
   }
 
-  // ── STEP 4: Done ────────────────────────────────────────────────────────────
+  // ── STEP 3: Done ────────────────────────────────────────────────────────────
   try { await browser.close(); } catch (e) { logError("browser.close", e); }
 
   const total = Object.keys(collected).length;
