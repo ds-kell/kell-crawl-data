@@ -1,8 +1,9 @@
 /**
  * E-Hentai Gallery Crawler
  *
- * Strategy: Mở từng trang ảnh, click nút #next để sang trang kế, lưu URL ảnh gốc (#img).
- * - Lưu web_url để detect vòng lặp (khi next về ảnh đầu tiên thì dừng)
+ * Strategy: Mở từng trang ảnh, click nút #next để sang trang kế, 
+ * tải trực tiếp ảnh gốc (#img) và lưu vào folder "photo".
+ * - Lưu web_url để detect vòng lặp
  * - Resume được nếu chạy lại
  * - Lưu realtime từng ảnh
  *
@@ -18,23 +19,29 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-
+import https from 'https';
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const TARGET_URL        = "https://e-hentai.org/s/14cef5ae9a/2917545-1";
 const FIRST_PHOTO_URL   = "https://e-hentai.org/s/14cef5ae9a/2917545-1";
 const LAST_PHOTO_URL    = "https://e-hentai.org/s/e0f25470eb/2917545-1348";
+const PHOTO_FOLDER      = "photo";                 // Thư mục lưu ảnh
 const OUTPUT_FILE       = "fb_images_v2.json";
 const ERROR_FILE        = "fb_errors.json";
 const HEADLESS          = false;
-const PHOTO_WAIT_MS     = 1500;     // Chờ sau mỗi lần next ảnh
+const PHOTO_WAIT_MS     = 1500;
 const LOG_FILE          = "fb_crawl.log";
-const MAX_PAGE_RETRIES  = 5;        // Số lần reload nếu không tìm thấy ảnh
+const MAX_PAGE_RETRIES  = 5;
 const NETWORK_RETRY_LIMIT      = 5;
 const NETWORK_RETRY_DELAY_MS   = 5000;
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Logger ghi ra file + console ─────────────────────────────────────────────
+// Tạo thư mục photo nếu chưa tồn tại
+if (!fs.existsSync(PHOTO_FOLDER)) {
+  fs.mkdirSync(PHOTO_FOLDER, { recursive: true });
+}
+
+// ── Logger ────────────────────────────────────────────────────────────────────
 const logStream = fs.createWriteStream(LOG_FILE, { flags: "a" });
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
@@ -44,7 +51,7 @@ function log(msg) {
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let collected    = {};        // imgUrl → record
-let seenWebUrls  = new Set(); // web_url đã thấy để detect vòng lặp
+let seenWebUrls  = new Set();
 let errorLog     = [];
 let globalIndex  = 0;
 
@@ -83,17 +90,68 @@ function loadExisting() {
   }
 }
 
-// ── Ingest một ảnh ────────────────────────────────────────────────────────────
-function ingestOne(imgUrl, webUrl) {
+// ── Download ảnh từ URL và lưu vào folder photo ───────────────────────────────
+async function downloadImage(imgUrl, webUrl) {
+  const name = path.basename(imgUrl.split("?")[0]) || `photo_${globalIndex}.jpg`;
+  const filepath = path.join(PHOTO_FOLDER, name);
+
+  if (fs.existsSync(filepath)) {
+    log(`[SKIP-DOWNLOAD] File đã tồn tại: ${name}`);
+    return name;
+  }
+
+  return new Promise((resolve, reject) => {
+    https.get(imgUrl, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`HTTP ${response.statusCode}`));
+        return;
+      }
+
+      const fileStream = fs.createWriteStream(filepath);
+      response.pipe(fileStream);
+
+      fileStream.on('finish', () => {
+        fileStream.close();
+        log(`[DOWNLOADED] ${name} | ${webUrl}`);
+        resolve(name);
+      });
+
+      fileStream.on('error', (err) => {
+        fs.unlink(filepath, () => {});
+        reject(err);
+      });
+    }).on('error', (err) => {
+      reject(err);
+    });
+  });
+}
+
+// ── Ingest một ảnh (lưu metadata + download) ──────────────────────────────────
+async function ingestOne(imgUrl, webUrl) {
   if (collected[imgUrl]) {
-    log(`[SKIP-DUP] imgUrl đã tồn tại | web_url=${webUrl} | img=${imgUrl.slice(0, 80)}...`);
+    log(`[SKIP-DUP] imgUrl đã tồn tại | web_url=${webUrl}`);
     return false;
   }
-  const name = path.basename(imgUrl.split("?")[0]) || `photo_${globalIndex}`;
-  collected[imgUrl] = { id: uuidv4(), name, url: imgUrl, web_url: webUrl, status: "found", index: globalIndex++ };
-  try { saveAll(); } catch (e) { logError(`saveAll index=${globalIndex}`, e); }
-  log(`[+] #${globalIndex} | ${name}`);
-  return true;
+
+  try {
+    const filename = await downloadImage(imgUrl, webUrl);
+
+    collected[imgUrl] = {
+      id: uuidv4(),
+      name: filename,
+      url: imgUrl,
+      web_url: webUrl,
+      status: "downloaded",
+      index: globalIndex++
+    };
+
+    try { saveAll(); } catch (e) { logError(`saveAll index=${globalIndex}`, e); }
+    log(`[+] #${globalIndex} | ${filename}`);
+    return true;
+  } catch (err) {
+    logError(`downloadImage ${imgUrl}`, err);
+    return false;
+  }
 }
 
 // ── Lấy URL ảnh gốc từ #img ──────────────────────────────────────────────────
@@ -117,10 +175,9 @@ async function withRetry(fn, label, retries = NETWORK_RETRY_LIMIT) {
   }
 }
 
-// ── Viewer crawl: bắt đầu từ URL ảnh đầu tiên, click #next từng bước ─────────
+// ── Viewer crawl ──────────────────────────────────────────────────────────────
 async function viewerCrawl(page) {
   log("[VIEWER] Bắt đầu crawl từ ảnh đầu tiên...");
-  await page.waitForTimeout(2000);
 
   let round = 0;
   let lastCollectedCount = 0;
@@ -131,10 +188,8 @@ async function viewerCrawl(page) {
     round++;
     const webUrl = page.url();
 
-    // Chờ ảnh render xong
     await page.waitForTimeout(PHOTO_WAIT_MS);
 
-    // Lấy ảnh, nếu thất bại thì reload tối đa MAX_PAGE_RETRIES lần
     if (seenWebUrls.has(webUrl)) {
       log(`[SKIP-SEEN] round=${round} url=${webUrl}`);
     } else {
@@ -143,7 +198,7 @@ async function viewerCrawl(page) {
       let imgUrl = null;
       for (let attempt = 1; attempt <= MAX_PAGE_RETRIES + 1; attempt++) {
         try { imgUrl = await extractViewerImage(page); } catch (e) {
-          logError(`extractViewerImage round=${round} attempt=${attempt} url=${webUrl}`, e);
+          logError(`extractViewerImage round=${round} attempt=${attempt}`, e);
         }
         if (imgUrl) break;
 
@@ -155,28 +210,25 @@ async function viewerCrawl(page) {
       }
 
       if (imgUrl) {
-        ingestOne(imgUrl, webUrl);
+        await ingestOne(imgUrl, webUrl);
       } else {
-        log(`[SKIP] Bỏ qua sau ${MAX_PAGE_RETRIES} lần reload | round=${round} | url=${webUrl}`);
+        log(`[SKIP] Bỏ qua sau ${MAX_PAGE_RETRIES} lần reload | round=${round}`);
         logError(`no image after retries round=${round}`, new Error(`url=${webUrl}`));
       }
     }
 
-    // Dừng nếu đây là trang cuối
     if (webUrl === LAST_PHOTO_URL) {
       log(`[VIEWER] Đã đến ảnh cuối cùng — dừng. Total: ${Object.keys(collected).length}`);
       break;
     }
 
-    // Next ảnh: click nút #next
     try {
       await page.click("a#next");
     } catch (e) {
-      logError(`click #next round=${round} url=${webUrl}`, e);
+      logError(`click #next round=${round}`, e);
       break;
     }
 
-    // Chờ URL thực sự thay đổi (tối đa 5s), nếu không đổi thì tự reload
     const prevUrl = webUrl;
     let nextUrl = prevUrl;
     const urlChangeDeadline = Date.now() + 5000;
@@ -186,13 +238,13 @@ async function viewerCrawl(page) {
     }
 
     if (nextUrl === prevUrl) {
-      log(`[STUCK] URL không đổi sau click #next round=${round}, tự reload...`);
+      log(`[STUCK] URL không đổi sau click #next, tự reload...`);
       try {
         await page.reload({ waitUntil: "domcontentloaded" });
         await page.waitForTimeout(PHOTO_WAIT_MS);
         seenWebUrls.delete(prevUrl);
       } catch (e) {
-        logError(`reload after stuck round=${round}`, e);
+        logError(`reload after stuck`, e);
       }
       continue;
     }
@@ -201,13 +253,12 @@ async function viewerCrawl(page) {
       log(`[VIEWER] Round ${round} | Collected: ${Object.keys(collected).length}`);
     }
 
-    // Detect loop: nếu quá nhiều round không collect được ảnh mới thì dừng
     const currentCount = Object.keys(collected).length;
     if (currentCount > lastCollectedCount) {
       lastCollectedCount = currentCount;
       stuckSinceRound = round;
     } else if (round - stuckSinceRound >= MAX_STUCK_ROUNDS) {
-      log(`[VIEWER] Không collect được ảnh mới trong ${MAX_STUCK_ROUNDS} round liên tiếp (từ round ${stuckSinceRound}). Dừng.`);
+      log(`[VIEWER] Không collect được ảnh mới trong ${MAX_STUCK_ROUNDS} round. Dừng.`);
       break;
     }
   }
@@ -222,11 +273,13 @@ async function viewerCrawl(page) {
     slowMo: 50,
     args: ["--start-maximized", "--disable-blink-features=AutomationControlled"],
   });
+
   const context = await browser.newContext({
     userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     viewport: null,
     locale: "vi-VN",
   });
+
   await context.addInitScript(() => {
     Object.defineProperty(navigator, "webdriver", { get: () => undefined });
   });
@@ -236,11 +289,11 @@ async function viewerCrawl(page) {
   log(`\n${"═".repeat(60)}`);
   log(`  E-Hentai Gallery Crawler`);
   log(`  Target: ${TARGET_URL}`);
+  log(`  Photo folder: ${PHOTO_FOLDER}`);
   log(`  Output: ${OUTPUT_FILE}`);
   log(`  Log:    ${LOG_FILE}`);
   log(`${"═".repeat(60)}`);
 
-  // ── STEP 1: Vào trang ảnh đầu tiên (không cần login) ───────────────────────
   log(`[NAV] Chuyển đến ${TARGET_URL} ...`);
   await withRetry(
     () => page.goto(TARGET_URL, { waitUntil: "domcontentloaded", timeout: 60000 }),
@@ -248,17 +301,15 @@ async function viewerCrawl(page) {
   );
   await page.waitForTimeout(4000);
 
-  // ── STEP 2: Crawl từng ảnh ─────────────────────────────────────────────────
   try {
     await viewerCrawl(page);
   } catch (e) {
     logError("viewerCrawl fatal", e);
   }
 
-  // ── STEP 3: Done ────────────────────────────────────────────────────────────
   try { await browser.close(); } catch (e) { logError("browser.close", e); }
 
   const total = Object.keys(collected).length;
-  log(`✅ Done! ${total} ảnh đã lưu vào ${OUTPUT_FILE}`);
+  log(`✅ Done! ${total} ảnh đã tải và lưu vào folder "${PHOTO_FOLDER}"`);
   if (errorLog.length > 0) log(`⚠️  ${errorLog.length} lỗi trong ${ERROR_FILE}`);
 })();

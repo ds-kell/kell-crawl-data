@@ -1,0 +1,22 @@
+[2026-04-17T16:23:51.690Z] [LOAD] 1348 ảnh từ fb_images_v2.json
+[2026-04-17T16:23:51.693Z] [MKDIR] Tạo folder photo/
+[2026-04-17T16:23:51.693Z] [RESUME] Đã tải trước đó: 0/1348
+[2026-04-17T16:23:51.693Z] [START] Bắt đầu tải với concurrency=5...
+[2026-04-17T16:23:51.873Z] [WARN] #2 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:23:51.932Z] [WARN] #1 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:23:52.160Z] [WARN] #4 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:23:52.174Z] [WARN] #0 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:23:52.473Z] [WARN] #3 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:23:54.001Z] [WARN] #2 attempt 2/3 failed: HTTP 403
+[2026-04-17T16:23:54.105Z] [WARN] #1 attempt 2/3 failed: HTTP 403
+[2026-04-17T16:23:54.383Z] [WARN] #4 attempt 2/3 failed: HTTP 403
+[2026-04-17T16:23:54.393Z] [WARN] #0 attempt 2/3 failed: HTTP 403
+[2026-04-17T16:23:55.093Z] [WARN] #3 attempt 2/3 failed: HTTP 403
+[2026-04-17T16:30:28.675Z] [LOAD] 1348 ảnh từ fb_images_v2.json
+[2026-04-17T16:30:28.678Z] [RESUME] Đã tải trước đó: 0/1348
+[2026-04-17T16:30:28.678Z] [START] Bắt đầu tải với concurrency=5...
+[2026-04-17T16:30:28.833Z] [WARN] #2 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:30:28.899Z] [WARN] #1 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:30:28.977Z] [WARN] #0 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:30:29.098Z] [WARN] #4 attempt 1/3 failed: HTTP 403
+[2026-04-17T16:30:29.122Z] [WARN] #3 attempt 1/3 failed: HTTP 403

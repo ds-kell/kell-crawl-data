@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-04-17T16:33:44.643Z",
+    "context": "viewerCrawl fatal",
+    "message": "page.waitForTimeout: Target page, context or browser has been closed"
+  },
+  {
+    "timestamp": "2026-04-17T16:35:36.759Z",
+    "context": "viewerCrawl fatal",
+    "message": "page.waitForTimeout: Target page, context or browser has been closed"
+  }
+]

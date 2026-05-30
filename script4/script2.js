@@ -1,17 +1,9 @@
 /**
- * E-Hentai Gallery Crawler
+ * script2.js — Resume crawl từ web_url cuối cùng trong fb_images_v2.json
  *
- * Strategy: Mở từng trang ảnh, click nút #next để sang trang kế, lưu URL ảnh gốc (#img).
- * - Lưu web_url để detect vòng lặp (khi next về ảnh đầu tiên thì dừng)
- * - Resume được nếu chạy lại
- * - Lưu realtime từng ảnh
- *
- * Usage:
- *   node script.js
- *
- * Requirements:
- *   npm install playwright uuid
- *   npx playwright install chromium
+ * - Bắt đầu từ web_url có index cao nhất trong file
+ * - Nhấn ArrowRight từng bước, insert tiếp vào fb_images_v2.json
+ * - Dừng khi gặp TARGET_URL (ảnh đầu tiên = đã đi hết vòng)
  */
 
 import { chromium } from 'playwright';
@@ -21,20 +13,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const TARGET_URL        = "https://e-hentai.org/s/14cef5ae9a/2917545-1";
-const FIRST_PHOTO_URL   = "https://e-hentai.org/s/14cef5ae9a/2917545-1";
-const LAST_PHOTO_URL    = "https://e-hentai.org/s/e0f25470eb/2917545-1348";
-const OUTPUT_FILE       = "fb_images_v2.json";
-const ERROR_FILE        = "fb_errors.json";
-const HEADLESS          = false;
-const PHOTO_WAIT_MS     = 1500;     // Chờ sau mỗi lần next ảnh
-const LOG_FILE          = "fb_crawl.log";
-const MAX_PAGE_RETRIES  = 5;        // Số lần reload nếu không tìm thấy ảnh
-const NETWORK_RETRY_LIMIT      = 5;
-const NETWORK_RETRY_DELAY_MS   = 5000;
+const TARGET_URL      = "https://www.facebook.com/photo.php?fbid=1500626338091126&set=pb.100044313229653.-2207520000&type=3";
+const OUTPUT_FILE     = "fb_images_v2.json";
+const ERROR_FILE      = "fb_errors.json";
+const LOG_FILE        = "fb_crawl2.log";
+const HEADLESS        = false;
+const LOGIN_WAIT_MS   = 300000;
+const PHOTO_WAIT_MS   = 1500;
+const MAX_PAGE_RETRIES       = 5;
+const NETWORK_RETRY_LIMIT    = 5;
+const NETWORK_RETRY_DELAY_MS = 5000;
+const MAX_STUCK_ROUNDS       = 100;
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Logger ghi ra file + console ─────────────────────────────────────────────
 const logStream = fs.createWriteStream(LOG_FILE, { flags: "a" });
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
@@ -42,13 +33,11 @@ function log(msg) {
   logStream.write(line + "\n");
 }
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let collected    = {};        // imgUrl → record
-let seenWebUrls  = new Set(); // web_url đã thấy để detect vòng lặp
-let errorLog     = [];
-let globalIndex  = 0;
+let collected   = {};
+let seenWebUrls = new Set();
+let errorLog    = [];
+let globalIndex = 0;
 
-// ── File helpers ──────────────────────────────────────────────────────────────
 function saveAll() {
   const arr = Object.values(collected).sort((a, b) => a.index - b.index);
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(arr, null, 2), "utf8");
@@ -65,7 +54,6 @@ function logError(context, err) {
   log(`[ERROR] ${context}: ${entry.message}`);
 }
 
-// ── Resume support ────────────────────────────────────────────────────────────
 function loadExisting() {
   if (fs.existsSync(OUTPUT_FILE)) {
     try {
@@ -75,15 +63,25 @@ function loadExisting() {
         if (item.web_url) seenWebUrls.add(item.web_url);
         if (item.index >= globalIndex) globalIndex = item.index + 1;
       }
-      console.log(`[RESUME] Loaded ${arr.length} existing records.`);
+      log(`[RESUME] Loaded ${arr.length} existing records. globalIndex=${globalIndex}`);
     } catch (e) { logError("loadExisting", e); }
   }
   if (fs.existsSync(ERROR_FILE)) {
-    try { errorLog = JSON.parse(fs.readFileSync(ERROR_FILE, "utf8")); } catch (e) { logError("loadExisting errorLog", e); }
+    try { errorLog = JSON.parse(fs.readFileSync(ERROR_FILE, "utf8")); }
+    catch (e) { logError("loadExisting errorLog", e); }
   }
 }
 
-// ── Ingest một ảnh ────────────────────────────────────────────────────────────
+// Lấy web_url có index cao nhất
+function getLastWebUrl() {
+  const arr = Object.values(collected);
+  if (!arr.length) return null;
+  arr.sort((a, b) => b.index - a.index);
+  const last = arr[0];
+  log(`[RESUME] Ảnh cuối cùng: index=${last.index} | web_url=${last.web_url}`);
+  return last.web_url;
+}
+
 function ingestOne(imgUrl, webUrl) {
   if (collected[imgUrl]) {
     log(`[SKIP-DUP] imgUrl đã tồn tại | web_url=${webUrl} | img=${imgUrl.slice(0, 80)}...`);
@@ -96,15 +94,32 @@ function ingestOne(imgUrl, webUrl) {
   return true;
 }
 
-// ── Lấy URL ảnh gốc từ #img ──────────────────────────────────────────────────
 async function extractViewerImage(page) {
   return page.evaluate(() => {
-    const img = document.querySelector("img#img");
-    return img ? img.src : null;
+    const mediaImgs = [...document.querySelectorAll('img[data-visualcompletion="media-vc-image"]')];
+    const allImgs = [...document.querySelectorAll("img")].filter((img) => {
+      const src = img.src || "";
+      return (
+        (src.includes("scontent") || src.includes("fbcdn")) &&
+        !src.includes("emoji") &&
+        !src.includes("rsrc.php") &&
+        !/stp=.*p\d{2,3}x\d{2,3}/.test(src)
+      );
+    });
+    const candidates = mediaImgs.length ? mediaImgs : allImgs;
+    if (!candidates.length) return null;
+    candidates.sort((a, b) => (b.naturalWidth * b.naturalHeight) - (a.naturalWidth * a.naturalHeight));
+    try {
+      const u = new URL(candidates[0].src);
+      u.searchParams.delete("stp");
+      return u.toString();
+    } catch (e) {
+      console.error("[extractViewerImage] Failed to parse URL:", candidates[0].src, e?.message);
+      return candidates[0].src;
+    }
   });
 }
 
-// ── Retry wrapper ─────────────────────────────────────────────────────────────
 async function withRetry(fn, label, retries = NETWORK_RETRY_LIMIT) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try { return await fn(); } catch (e) {
@@ -117,24 +132,20 @@ async function withRetry(fn, label, retries = NETWORK_RETRY_LIMIT) {
   }
 }
 
-// ── Viewer crawl: bắt đầu từ URL ảnh đầu tiên, click #next từng bước ─────────
 async function viewerCrawl(page) {
-  log("[VIEWER] Bắt đầu crawl từ ảnh đầu tiên...");
+  log("[VIEWER] Bắt đầu crawl tiếp...");
   await page.waitForTimeout(2000);
 
   let round = 0;
-  let lastCollectedCount = 0;
+  let lastCollectedCount = Object.keys(collected).length;
   let stuckSinceRound = 0;
-  const MAX_STUCK_ROUNDS = 100;
 
   while (true) {
     round++;
     const webUrl = page.url();
 
-    // Chờ ảnh render xong
     await page.waitForTimeout(PHOTO_WAIT_MS);
 
-    // Lấy ảnh, nếu thất bại thì reload tối đa MAX_PAGE_RETRIES lần
     if (seenWebUrls.has(webUrl)) {
       log(`[SKIP-SEEN] round=${round} url=${webUrl}`);
     } else {
@@ -146,7 +157,6 @@ async function viewerCrawl(page) {
           logError(`extractViewerImage round=${round} attempt=${attempt} url=${webUrl}`, e);
         }
         if (imgUrl) break;
-
         if (attempt <= MAX_PAGE_RETRIES) {
           log(`[RETRY] Không tìm thấy ảnh, reload lần ${attempt} | url=${webUrl}`);
           await page.reload({ waitUntil: "domcontentloaded" });
@@ -162,60 +172,58 @@ async function viewerCrawl(page) {
       }
     }
 
-    // Dừng nếu đây là trang cuối
-    if (webUrl === LAST_PHOTO_URL) {
-      log(`[VIEWER] Đã đến ảnh cuối cùng — dừng. Total: ${Object.keys(collected).length}`);
-      break;
-    }
+    // Next ảnh
+    try { await page.keyboard.press("ArrowRight"); }
+    catch (e) { logError(`ArrowRight round=${round} url=${webUrl}`, e); break; }
 
-    // Next ảnh: click nút #next
-    try {
-      await page.click("a#next");
-    } catch (e) {
-      logError(`click #next round=${round} url=${webUrl}`, e);
-      break;
-    }
-
-    // Chờ URL thực sự thay đổi (tối đa 5s), nếu không đổi thì tự reload
+    // Chờ URL thay đổi
     const prevUrl = webUrl;
     let nextUrl = prevUrl;
-    const urlChangeDeadline = Date.now() + 5000;
-    while (nextUrl === prevUrl && Date.now() < urlChangeDeadline) {
+    const deadline = Date.now() + 5000;
+    while (nextUrl === prevUrl && Date.now() < deadline) {
       await page.waitForTimeout(200);
       nextUrl = page.url();
     }
 
     if (nextUrl === prevUrl) {
-      log(`[STUCK] URL không đổi sau click #next round=${round}, tự reload...`);
+      log(`[STUCK] URL không đổi sau ArrowRight round=${round}, tự reload...`);
       try {
         await page.reload({ waitUntil: "domcontentloaded" });
         await page.waitForTimeout(PHOTO_WAIT_MS);
         seenWebUrls.delete(prevUrl);
-      } catch (e) {
-        logError(`reload after stuck round=${round}`, e);
-      }
+      } catch (e) { logError(`reload after stuck round=${round}`, e); }
       continue;
+    }
+
+    // Dừng khi quay về TARGET_URL
+    if (nextUrl === TARGET_URL) {
+      log(`[VIEWER] Đã gặp TARGET_URL — dừng. Total: ${Object.keys(collected).length}`);
+      break;
     }
 
     if (round % 20 === 0) {
       log(`[VIEWER] Round ${round} | Collected: ${Object.keys(collected).length}`);
     }
 
-    // Detect loop: nếu quá nhiều round không collect được ảnh mới thì dừng
     const currentCount = Object.keys(collected).length;
     if (currentCount > lastCollectedCount) {
       lastCollectedCount = currentCount;
       stuckSinceRound = round;
     } else if (round - stuckSinceRound >= MAX_STUCK_ROUNDS) {
-      log(`[VIEWER] Không collect được ảnh mới trong ${MAX_STUCK_ROUNDS} round liên tiếp (từ round ${stuckSinceRound}). Dừng.`);
+      log(`[VIEWER] Không collect được ảnh mới trong ${MAX_STUCK_ROUNDS} round (từ round ${stuckSinceRound}). Dừng.`);
       break;
     }
   }
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 (async () => {
   loadExisting();
+
+  const startUrl = getLastWebUrl();
+  if (!startUrl) {
+    log("[ERROR] Không tìm thấy web_url cuối cùng trong file. Thoát.");
+    process.exit(1);
+  }
 
   const browser = await chromium.launch({
     headless: HEADLESS,
@@ -234,28 +242,38 @@ async function viewerCrawl(page) {
   const page = await context.newPage();
 
   log(`\n${"═".repeat(60)}`);
-  log(`  E-Hentai Gallery Crawler`);
-  log(`  Target: ${TARGET_URL}`);
-  log(`  Output: ${OUTPUT_FILE}`);
-  log(`  Log:    ${LOG_FILE}`);
+  log(`  Facebook Photo Crawler — script2 (resume)`);
+  log(`  Start URL: ${startUrl}`);
+  log(`  Stop at:   ${TARGET_URL}`);
+  log(`  Output:    ${OUTPUT_FILE}`);
   log(`${"═".repeat(60)}`);
 
-  // ── STEP 1: Vào trang ảnh đầu tiên (không cần login) ───────────────────────
-  log(`[NAV] Chuyển đến ${TARGET_URL} ...`);
   await withRetry(
-    () => page.goto(TARGET_URL, { waitUntil: "domcontentloaded", timeout: 60000 }),
-    "page.goto target"
+    () => page.goto("https://www.facebook.com/login", { waitUntil: "domcontentloaded", timeout: 60000 }),
+    "page.goto login"
+  );
+
+  log("⚠️  ĐĂNG NHẬP: Điền email/password trong cửa sổ trình duyệt.");
+  log(`   Script chờ tối đa ${LOGIN_WAIT_MS / 60000} phút. Nhấn Enter khi xong.`);
+
+  await Promise.race([
+    new Promise((resolve) => process.stdin.once("data", resolve)),
+    page.waitForTimeout(LOGIN_WAIT_MS),
+  ]);
+
+  log(`[NAV] Chuyển đến ${startUrl} ...`);
+  await withRetry(
+    () => page.goto(startUrl, { waitUntil: "domcontentloaded", timeout: 60000 }),
+    "page.goto startUrl"
   );
   await page.waitForTimeout(4000);
 
-  // ── STEP 2: Crawl từng ảnh ─────────────────────────────────────────────────
   try {
     await viewerCrawl(page);
   } catch (e) {
     logError("viewerCrawl fatal", e);
   }
 
-  // ── STEP 3: Done ────────────────────────────────────────────────────────────
   try { await browser.close(); } catch (e) { logError("browser.close", e); }
 
   const total = Object.keys(collected).length;
