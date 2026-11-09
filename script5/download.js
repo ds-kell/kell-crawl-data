@@ -49,6 +49,7 @@ const TIMEOUT_MS = Number(process.env.TIMEOUT_MS || 30_000);
 const MAX_RETRIES = Number(process.env.MAX_RETRIES || 3);
 const MAX_REDIRECTS = 5;
 const PHOTO_USE_PROFILE_DIR = process.env.PHOTO_USE_PROFILE_DIR === "1";
+const REPAIR_URLS = process.env.REPAIR_URLS !== "0";
 
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
@@ -61,6 +62,10 @@ function ensureParent(file) {
 
 ensureParent(LOG_FILE);
 const logStream = fs.createWriteStream(LOG_FILE, { flags: "a" });
+
+let currentItems = null;
+let itemsSaveTimer = null;
+let repairHintLogged = false;
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
@@ -83,6 +88,96 @@ function saveStatus(status) {
   const tmp = `${STATUS_FILE}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(status, null, 2), "utf8");
   fs.renameSync(tmp, STATUS_FILE);
+}
+
+function hasStpParam(rawUrl) {
+  try {
+    return new URL(rawUrl).searchParams.has("stp");
+  } catch {
+    return false;
+  }
+}
+
+// Chèn stp vào ĐẦU query, giữ nguyên toàn bộ query cũ.
+// Facebook ký oh= trên đúng chuỗi query, nên chỉ thêm stp mới có thể khôi phục URL cũ.
+function addStpParam(rawUrl, stp = "dst-jpg_tt6") {
+  const qIndex = rawUrl.indexOf("?");
+  if (qIndex === -1) return `${rawUrl}?stp=${stp}`;
+  return `${rawUrl.slice(0, qIndex + 1)}stp=${stp}&${rawUrl.slice(qIndex + 1)}`;
+}
+
+function probeUrl(url) {
+  return new Promise((resolve) => {
+    let proto;
+    try {
+      proto = new URL(url).protocol === "http:" ? http : https;
+    } catch {
+      return resolve(false);
+    }
+
+    const req = proto.request(
+      url,
+      {
+        method: "HEAD",
+        headers: {
+          "User-Agent": USER_AGENT,
+          Referer: "https://www.facebook.com/",
+          Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+          "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
+        },
+      },
+      (res) => {
+        res.resume();
+        resolve((res.statusCode || 0) >= 200 && (res.statusCode || 0) < 300);
+      }
+    );
+    req.setTimeout(15_000, () => req.destroy(new Error("timeout")));
+    req.on("error", () => resolve(false));
+    req.end();
+  });
+}
+
+function saveItemsNow() {
+  if (!currentItems) return;
+  ensureParent(INPUT_FILE);
+  const tmp = `${INPUT_FILE}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(currentItems, null, 2), "utf8");
+  fs.renameSync(tmp, INPUT_FILE);
+}
+
+function scheduleSaveItems() {
+  if (itemsSaveTimer) return;
+  itemsSaveTimer = setTimeout(() => {
+    itemsSaveTimer = null;
+    try {
+      saveItemsNow();
+    } catch (e) {
+      log(`[WARN] Không ghi được ${INPUT_FILE}: ${e.message}`);
+    }
+  }, 1_000);
+}
+
+async function maybeRepairUrl(item) {
+  if (!REPAIR_URLS || !item?.is_original || !item.url) return false;
+  if (hasStpParam(item.url)) return false;
+
+  const candidate = addStpParam(item.url);
+  const ok = await probeUrl(candidate);
+  if (!ok) {
+    log(
+      `[FIX] [${profileFolder(item)}] #${item.index} URL cũ vẫn lỗi, cần chạy: REFRESH_INVALID_URLS=1 node script5/fetch-originals.js`
+    );
+    return false;
+  }
+
+  const old = item.url;
+  item.url = candidate;
+  item.url_repaired = true;
+  item.url_repaired_at = new Date().toISOString();
+  item.url_before_repair = old;
+  scheduleSaveItems();
+  log(`[FIX] [${profileFolder(item)}] #${item.index} đã khôi phục chữ ký URL`);
+  return true;
 }
 
 function sanitizeName(name) {
@@ -218,6 +313,8 @@ async function downloadOne(item, status) {
     return "skipped";
   }
 
+  await maybeRepairUrl(item);
+
   let lastError = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -253,6 +350,15 @@ async function downloadOne(item, status) {
   };
   saveStatus(status);
   log(`[✗] [${profile}] #${item.index} FAILED: ${status[key].error}`);
+
+  if (!repairHintLogged && /HTTP (403|410)/.test(status[key].error)) {
+    repairHintLogged = true;
+    log(
+      "[HINT] Gặp 403/410: URL có thể đã hết hạn hoặc không khôi phục được. " +
+        "Chạy: REFRESH_INVALID_URLS=1 node script5/fetch-originals.js rồi download lại."
+    );
+  }
+
   return "failed";
 }
 
@@ -355,7 +461,8 @@ async function main() {
     process.exit(1);
   }
 
-  const items = loadJson(INPUT_FILE, []);
+  currentItems = loadJson(INPUT_FILE, []);
+  const items = currentItems;
   if (!Array.isArray(items) || items.length === 0) {
     console.error(`${INPUT_FILE} rỗng hoặc sai định dạng.`);
     process.exit(1);
@@ -380,6 +487,12 @@ async function main() {
   );
   log(`   Ảnh nằm trong: ${PHOTO_DIR}/`);
   log(`   Trạng thái:    ${STATUS_FILE}`);
+
+  if (itemsSaveTimer) {
+    clearTimeout(itemsSaveTimer);
+    itemsSaveTimer = null;
+  }
+  saveItemsNow();
 
   await new Promise((resolve) => logStream.end(resolve));
 }

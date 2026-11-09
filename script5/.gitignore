@@ -4,3 +4,5 @@ photo/
 *.tmp
 .env
 .env.local
+.DS_Store
+download_status.json

@@ -60,6 +60,7 @@ const RETRY_DELAY_MS = Number(process.env.RETRY_DELAY_MS || 3_000);
 const PAGE_TIMEOUT_MS = Number(process.env.PAGE_TIMEOUT_MS || 60_000);
 const SAVE_DEBOUNCE_MS = Number(process.env.SAVE_DEBOUNCE_MS || 1_000);
 const REFRESH_ORIGINALS = process.env.REFRESH_ORIGINALS === "1";
+const REFRESH_INVALID_URLS = process.env.REFRESH_INVALID_URLS === "1";
 const SKIP_LOGIN = process.env.SKIP_LOGIN === "1";
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -170,6 +171,29 @@ function isFacebookHost(host) {
   return h === "facebook.com" || h.endsWith(".facebook.com");
 }
 
+function hasStpParam(rawUrl) {
+  try {
+    return new URL(rawUrl).searchParams.has("stp");
+  } catch {
+    return false;
+  }
+}
+
+function needsFetch(record) {
+  if (REFRESH_ORIGINALS) return true;
+  if (!record || record.original_status !== "success") return true;
+  // URL cũ bị xoá stp -> chữ ký oh= không còn hợp lệ
+  if (
+    REFRESH_INVALID_URLS &&
+    record.is_original &&
+    record.url &&
+    !hasStpParam(record.url)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 class AuthError extends Error {}
 
@@ -247,21 +271,11 @@ async function extractViewerImage(page) {
     );
     const list = usable.length ? usable : candidates;
 
-    const stripStp = (rawUrl) => {
-      try {
-        const u = new URL(rawUrl);
-        u.searchParams.delete("stp");
-        return u.toString();
-      } catch (_) {
-        return rawUrl;
-      }
-    };
-
     if (!list.length) {
       // Fallback: og:image thường trỏ đúng ảnh của photo page hiện tại
       const og = document.querySelector('meta[property="og:image"]')?.content || "";
       if (og.includes("fbcdn") || og.includes("scontent")) {
-        return { url: stripStp(og), width: 0, height: 0 };
+        return { url: og, width: 0, height: 0 };
       }
       return null;
     }
@@ -273,7 +287,10 @@ async function extractViewerImage(page) {
     );
 
     const best = list[0];
-    const url = stripStp(best.currentSrc || best.src);
+    // Giữ nguyên URL gốc, KHÔNG xoá stp: chữ ký oh= của Facebook
+    // được tính trên đúng query string này. Xoá stp sẽ bị 403
+    // "URL signature mismatch".
+    const url = best.currentSrc || best.src;
 
     return {
       url,
@@ -381,7 +398,7 @@ async function worker(context, workerId) {
       const rec = records[i];
       if (!rec || !rec.url) continue;
 
-      if (!REFRESH_ORIGINALS && rec.original_status === "success") {
+      if (!needsFetch(rec)) {
         stats.already++;
         continue;
       }
@@ -513,9 +530,7 @@ async function main() {
   errorLog = loadJson(ERROR_FILE, []);
   if (!Array.isArray(errorLog)) errorLog = [];
 
-  const pending = records.filter(
-    (r) => REFRESH_ORIGINALS || r.original_status !== "success"
-  );
+  const pending = records.filter(needsFetch);
   const withWebUrl = pending.filter((r) => r.web_url).length;
 
   log("═".repeat(60));

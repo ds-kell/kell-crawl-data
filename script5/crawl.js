@@ -542,7 +542,7 @@ function ingest(rawUrl, meta = {}) {
     const newScore = qualityScore(rawUrl, meta);
     const oldScore = qualityScore(existing.url, { width: existing.width });
 
-    if (newScore > oldScore + 50) {
+    if (!existing.is_original && newScore > oldScore + 50) {
       existing.url = rawUrl;
       existing.name = nameOf(rawUrl);
       existing.source = meta.source || existing.source;

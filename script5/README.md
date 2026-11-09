@@ -163,7 +163,7 @@ Mỗi file có 3 lớp chống trùng:
 2. **Theo `fbid` / photo id trong `web_url`** — hai URL khác tên file nhưng cùng `fbid` cũng bị gộp.
 3. **Khi resume** — đọc lại JSON cũ, record nào đã có thì bỏ qua; record trùng trong file cũ cũng tự bị loại.
 
-Nếu cùng một ảnh có nhiều biến thể, script giữ URL chất lượng cao hơn (thường là bản không có `stp`).
+Nếu cùng một ảnh có nhiều biến thể, script giữ URL chất lượng cao hơn. Với ảnh gốc, script **giữ nguyên `stp`** vì chữ ký `oh=` của Facebook được tính trên đúng query string.
 
 > Dữ liệu cũ `script5/fb_user_images.json` (nếu có) sẽ tự được migrate sang
 > `script5/data/<profile đầu tiên>/fb_user_images.json`. File cũ vẫn được giữ lại để backup.
@@ -179,7 +179,7 @@ node script5/fetch-originals.js
 
 Script tự tìm **tất cả** `script5/data/*/fb_user_images.json` và chạy lần lượt từng profile.
 
-Script mở lại từng `web_url`, tìm ảnh chính trong photo viewer, bỏ tham số `stp` (resize của Facebook) và cập nhật lại record:
+Script mở lại từng `web_url`, tìm ảnh chính trong photo viewer và cập nhật lại record. Script **giữ nguyên URL gốc**, không xoá `stp`, vì Facebook ký chữ ký `oh=` trên đúng query string — xoá `stp` sẽ bị `403 URL signature mismatch`.
 
 ```json
 {
@@ -254,7 +254,14 @@ script5/data/account2/photo/00000_...
 - Có retry + timeout.
 
 > ⚠️ URL CDN của Facebook có hạn (`oe=` trong query). Nên tải ngay sau khi lấy ảnh gốc.
-> Nếu gặp `HTTP 403` / `HTTP 410`, chạy lại `fetch-originals.js` để lấy URL mới.
+>
+> `download.js` tự phát hiện URL cũ bị mất `stp` và tự thêm lại `stp=dst-jpg_tt6`
+> để khôi phục chữ ký `oh=`. Nếu vẫn gặp `HTTP 403` / `HTTP 410`:
+>
+> ```bash
+> REFRESH_INVALID_URLS=1 node script5/fetch-originals.js
+> node script5/download.js
+> ```
 
 ---
 
@@ -295,6 +302,7 @@ script5/data/account2/photo/00000_...
 | `VIEWER_RETRIES` | `3` | Số lần thử lại mỗi ảnh |
 | `RETRY_DELAY_MS` | `3000` | Chờ trước khi retry |
 | `REFRESH_ORIGINALS` | `0` | `1` = lấy lại cả ảnh đã success |
+| `REFRESH_INVALID_URLS` | `0` | `1` = chỉ lấy lại record có URL bị mất `stp` / chữ ký lỗi |
 | `SKIP_LOGIN` | `0` | `1` = không chờ login (chỉ dùng cho nội dung public) |
 
 ### download.js
@@ -304,6 +312,7 @@ script5/data/account2/photo/00000_...
 | `DOWNLOAD_CONCURRENCY` | `5` | Số ảnh tải song song |
 | `TIMEOUT_MS` | `30000` | Timeout mỗi ảnh |
 | `MAX_RETRIES` | `3` | Số lần thử lại |
+| `REPAIR_URLS` | `1` | Tự khôi phục URL cũ bị mất `stp` trước khi tải |
 | `PHOTO_DIR` | `script5/data/<profile>/photo` | Thư mục lưu ảnh |
 | `STATUS_FILE` | `script5/data/<profile>/download_status.json` | File trạng thái tải |
 
