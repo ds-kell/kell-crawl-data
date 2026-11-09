@@ -1,0 +1,13 @@
+# Mỗi dòng là 1 link tab Photos của Facebook.
+# Dòng bắt đầu bằng # sẽ bị bỏ qua.
+#
+# Có thể dùng link dạng:
+#   https://www.facebook.com/username/photos
+#   https://www.facebook.com/username/photos_by
+#   https://www.facebook.com/profile.php?id=123456789&sk=photos_by
+#
+# Thêm các tài khoản khác bên dưới:
+
+https://www.facebook.com/genkosama/photos
+https://www.facebook.com/irene.peng.66187/photos
+https://www.facebook.com/Mr.Genko/photos

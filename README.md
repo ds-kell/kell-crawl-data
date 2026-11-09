@@ -1,5 +1,11 @@
 # Facebook Photo Crawler
 
+> ⚠️ **README này mô tả thiết kế cũ** (`fb_photo_crawler.js`, scroll + network intercept).
+> File đó chưa từng tồn tại trong repo. Code hiện tại dùng cách mở từng photo viewer.
+>
+> Bản crawler mới, đúng mô tả scroll + network intercept + DOM scan và **lấy được ảnh gốc**:
+> xem [`script5/README.md`](script5/README.md).
+
 Crawl tất cả image URL từ trang photos Facebook của bạn, lưu realtime vào JSON.
 
 ## Cài đặt

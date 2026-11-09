@@ -1,0 +1,6 @@
+.fb-profile/
+photo/
+*.log
+*.tmp
+.env
+.env.local
